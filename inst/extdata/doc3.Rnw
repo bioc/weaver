@@ -1,0 +1,75 @@
+%
+% NOTE -- ONLY EDIT THE .Rnw FILE!!!  The .tex file is
+% likely to be overwritten.
+%
+\documentclass[11pt]{article}
+
+\usepackage{times}
+\usepackage{hyperref}
+
+\usepackage[authoryear,round]{natbib}
+\usepackage{times}
+\usepackage{comment}
+
+\textwidth=6.2in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+
+\newlength{\smallfigwidth}
+\setlength{\smallfigwidth}{6cm}
+
+\newcommand{\scscst}{\scriptscriptstyle}
+\newcommand{\scst}{\scriptstyle}
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textsf{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+
+\newcommand{\MAT}[1]{{\bf #1}}
+\newcommand{\VEC}[1]{{\bf #1}}
+
+\newcommand{\Amat}{{\MAT{A}}}
+
+%%notationally this is going to break
+\newcommand{\Emat}{{\MAT{E}}}
+\newcommand{\Xmat}{{\MAT{X}}}
+\newcommand{\Xvec}{{\VEC{X}}}
+\newcommand{\xvec}{{\VEC{x}}}
+
+
+\newcommand{\Zvec}{{\VEC{Z}}}
+\newcommand{\zvec}{{\VEC{z}}}
+
+\newcommand{\calG}{\mbox{${\cal G}$}}
+
+\bibliographystyle{plainnat}
+
+\title{Collection of Edge Cases for expression dependency}
+\author{S. Falcon}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+This is doc3.  Try to excercise the dependency tracking stuff.
+
+<<t1, cache=TRUE>>=
+bDat <- 1:10
+x <- c(1, 2)
+bDat <- bDat[x]
+
+@ 
+
+<<t2, cache=TRUE>>=
+cDat <- bDat * 2
+@ 
+
+
+\end{document}

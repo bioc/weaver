@@ -1,0 +1,9 @@
+\begin{verbatim}
+<<someChunk, cache=TRUE>>=
+## All expressions will be cached
+##    NO SIDE EFFECTS 
+b <- rnorm(3)
+c <- runif(3)
+z <- b + c
+@ 
+\end{verbatim}

@@ -1,0 +1,199 @@
+%
+% NOTE -- ONLY EDIT howtogenefilter.Rnw!!!
+% Biobase.tex file will get overwritten.
+%
+%\VignetteIndexEntry{Using weaver to process Sweave documents}
+%\VignetteDepends{weaver}
+%\VignetteKeywords{latex,sweave,cache}
+%\VignettePackage{weaver}
+\documentclass{article}
+
+\usepackage{hyperref}
+
+\textwidth=6.2in
+\textheight=8.5in
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Rmethod}[1]{{\texttt{#1}}}
+\newcommand{\Rcode}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textit{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+\newcommand{\classdef}[1]{%
+  {\em #1}
+}
+
+
+\begin{document}
+\title{How to use weaver for Sweave document processing}
+\author{Seth Falcon}
+\date{8 June, 2006}
+
+\maketitle
+
+\section{Introduction}
+
+The \Rpackage{weaver} package provides extensions to the Sweave
+utilities included in R's \Rpackage{base} package.  The focus of the
+extensions is on caching computationally expensive (time consuming)
+code chunks in Sweave documents.
+
+\textit{Why would I want to cache code chunks?}  If your Sweave
+document includes one or more code chunks that take a long time to
+compute, you may find it frustrating to make small changes to the
+document.  Each run requires recomputing the ``expensive'' code
+chunks.  If these chunks aren't changing, you can benefit from the
+caching provided by \Rpackage{weaver}.
+
+\textit{How does it work?}  The details are in the code, of course,
+but in a few words... You tell \Rpackage{weaver} which code chunks you
+want cached by setting a chunk option (\Rcode{cache=TRUE}).  A digest
+(md5 sum) of the text representation of \textit{each} expression in
+the code chunk is computed and the result of the expression is stored
+in a file named by the expression's digest.  Dependencies on
+previously cached expressions are determined using functions from the
+\Rpackage{codetools} package.  After the cache files have been
+created, subsequent runs load the cache instead of evaluating the
+expression (this means side-effects are completely lost!).  When
+changes in the dependencies of an expression are detected (or when the
+expression itself has changed), it is recomputed and the cache file is
+updated.
+
+
+\section{Using the expression caching feature}
+
+If you add the chunk option \Rcode{cache=TRUE}, then caching will be
+turned on for all expressions in the chunk.  Here's an example:
+
+\input{chunk-example1}
+
+Side-effects, such as printing, plotting, definging S4 classes or
+methods, or setting global options are not captured by the caching
+mechanism.  Avoid doing such things in a code chunk that has
+\Rcode{cache=TRUE}.
+
+
+\subsection{Warnings about using the caching feature}
+
+Do not stare directly at the cache!  May cause blindness, headache,
+shortness of breath, and dizzyness.
+
+\begin{itemize}
+\item Printing doesn't work normally in cached chunks.  If you want to
+      print a value, use \Rcode{print(foo)}.
+
+\item The dependency detection is imperfect and will fail you.  When
+      you've made important changes, you should remove all cache files
+      and rebuild the document.  By default, the cache database is
+      stored in a directory named \verb+r_env_cache+ in the current
+      working directory.  Removing this directory is the best way to
+      be certain that the following run will not use any cached data.
+      A log file is produced in the current working directory named
+      \verb+weaver_debug_log.txt+.  Reviewing it can be useful in
+      determining what the \Rpackage{weaver} system thinks the
+      dependencies of a given expression are.
+
+\item Caching is performed separately on each expression in a chunk
+      which has the option \Rcode{cache=TRUE} set.  Be especially
+      careful with repeated calls to random number based functions
+      like \Rfunction{rnorm}.  Repeated calls within cached chunks
+      will pull from the cache rather than computing a new stream of
+      random numbers.
+
+\item The cache is not document specific.  If you have two documents
+      in the same working directory that contain equivalent
+      expressions within a chunk that has caching turned on, you will
+      get the cached value.  I think this is a feature and will be
+      useful for testing purposes, but could be surprising.
+\end{itemize}
+
+
+
+\section{Processing a document from inside R}
+
+To process a document using \Rpackage{weaver}, load the
+\Rpackage{weaver} package and then use \Rfunction{weaver()} as the
+\Rcode{driver} argument to \Rfunction{Sweave}.  Here is an example:
+
+<<basicProc>>=
+library("weaver")
+testDocPath <- system.file("extdata/doc1.Rnw", package="weaver")
+curDir <- getwd()
+setwd(tempdir())
+z <- capture.output(Sweave(testDocPath, driver=weaver()), 
+                    file=tempfile())
+setwd(curDir)
+@ 
+
+Note that the calls to \Rfunction{setwd} are only needed here because
+we are processing an Sweave document inside an Sweave document.  Also,
+\Rfunction{capture.output} was used to keep this document short and to
+encourage you to run the examples yourself\footnote{In addition, some
+  of the output is sent to stderr and this is not captured when
+  running Sweave inside Sweave.}
+
+Now we run another sample document.  
+
+<<another>>=
+testDocPath <- system.file("extdata/doc2.Rnw", package="weaver")
+curDir <- getwd()
+setwd(tempdir())
+z <- capture.output(Sweave(testDocPath, driver=weaver()), 
+                    file=tempfile())
+setwd(curDir)
+@ 
+
+Finally, we run our first example document again.  This time, you can
+see that data from the cache is being used.
+
+<<again>>=
+testDocPath <- system.file("extdata/doc1.Rnw", package="weaver")
+curDir <- getwd()
+setwd(tempdir())
+z <- capture.output(Sweave(testDocPath, driver=weaver()), 
+                    file=tempfile())
+setwd(curDir)
+@ 
+
+\section{Sample convenience shell script}
+
+You can use this shell script to make processing \texttt{Rnw} files
+with \Rpackage{weaver} easier.
+
+\begin{verbatim}
+#!/bin/bash
+
+echo "library(weaver); Sweave(\"$1\", driver=weaver())" \
+  | R --no-save --no-restore
+\end{verbatim}
+
+If you put that into a file \texttt{weaver.sh}, then you can do:
+
+\begin{verbatim}
+weaver.sh somefile.Rnw
+\end{verbatim}
+
+to process \texttt{somefile.Rnw} with \Rpackage{weaver}.  Another
+useful script is one that does the processing without using any cached
+data.  This is useful, for example, when you are ready to produce a
+final draft of your document.
+
+\begin{verbatim}
+#!/bin/bash
+
+echo "library(weaver); Sweave(\"$1\", driver=weaver(), use.cache=FALSE)" \
+  | R --no-save --no-restore
+\end{verbatim}
+
+
+\section{Session Info}
+
+<<sessionInfo, results=tex>>=
+toLatex(sessionInfo())
+@ 
+
+\end{document}
+

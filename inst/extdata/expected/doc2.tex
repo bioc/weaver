@@ -1,0 +1,105 @@
+%
+% NOTE -- ONLY EDIT THE .Rnw FILE!!!  The .tex file is
+% likely to be overwritten.
+%
+\documentclass[11pt]{article}
+
+\usepackage{times}
+\usepackage{hyperref}
+
+\usepackage[authoryear,round]{natbib}
+\usepackage{times}
+\usepackage{comment}
+
+\textwidth=6.2in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+
+\newlength{\smallfigwidth}
+\setlength{\smallfigwidth}{6cm}
+
+\newcommand{\scscst}{\scriptscriptstyle}
+\newcommand{\scst}{\scriptstyle}
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textsf{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+
+\newcommand{\MAT}[1]{{\bf #1}}
+\newcommand{\VEC}[1]{{\bf #1}}
+
+\newcommand{\Amat}{{\MAT{A}}}
+
+%%notationally this is going to break
+\newcommand{\Emat}{{\MAT{E}}}
+\newcommand{\Xmat}{{\MAT{X}}}
+\newcommand{\Xvec}{{\VEC{X}}}
+\newcommand{\xvec}{{\VEC{x}}}
+
+
+\newcommand{\Zvec}{{\VEC{Z}}}
+\newcommand{\zvec}{{\VEC{z}}}
+
+\newcommand{\calG}{\mbox{${\cal G}$}}
+
+\bibliographystyle{plainnat}
+
+\title{Test Document for weaver}
+\author{S. Falcon}
+
+\usepackage{/Users/seth/proj/builds/R-2.4/share/texmf/Sweave}
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+This is doc2.  We'll reuse some chunks with a few changes and pickup
+the values that were cached during the processing of doc1.
+
+\begin{Schunk}
+\begin{Sinput}
+> set.seed(123)
+> b <- rnorm(3)
+> firstB <- b
+> c <- runif(3) * 2
+> z <- b + c
+> z
+\end{Sinput}
+\end{Schunk}
+
+
+\begin{Schunk}
+\begin{Sinput}
+> firstB
+\end{Sinput}
+\begin{Soutput}
+[1] -0.5604756 -0.2301775  1.5587083
+\end{Soutput}
+\begin{Sinput}
+> b
+\end{Sinput}
+\begin{Soutput}
+[1] 2.112422 3.569676 2.205740
+\end{Soutput}
+\begin{Sinput}
+> c
+\end{Sinput}
+\begin{Soutput}
+[1] 1.056211 1.784838 1.102870
+\end{Soutput}
+\begin{Sinput}
+> z
+\end{Sinput}
+\begin{Soutput}
+[1] 0.4957353 1.5546606 2.6615783
+\end{Soutput}
+\end{Schunk}
+
+
+\end{document}

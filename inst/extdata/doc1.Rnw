@@ -1,0 +1,111 @@
+%
+% NOTE -- ONLY EDIT THE .Rnw FILE!!!  The .tex file is
+% likely to be overwritten.
+%
+\documentclass[11pt]{article}
+
+\usepackage{times}
+\usepackage{hyperref}
+
+\usepackage[authoryear,round]{natbib}
+\usepackage{times}
+\usepackage{comment}
+
+\textwidth=6.2in
+\textheight=8.5in
+%\parskip=.3cm
+\oddsidemargin=.1in
+\evensidemargin=.1in
+\headheight=-.3in
+
+
+\newlength{\smallfigwidth}
+\setlength{\smallfigwidth}{6cm}
+
+\newcommand{\scscst}{\scriptscriptstyle}
+\newcommand{\scst}{\scriptstyle}
+
+\newcommand{\Rfunction}[1]{{\texttt{#1}}}
+\newcommand{\Robject}[1]{{\texttt{#1}}}
+\newcommand{\Rpackage}[1]{{\textsf{#1}}}
+\newcommand{\Rclass}[1]{{\textit{#1}}}
+
+\newcommand{\MAT}[1]{{\bf #1}}
+\newcommand{\VEC}[1]{{\bf #1}}
+
+\newcommand{\Amat}{{\MAT{A}}}
+
+%%notationally this is going to break
+\newcommand{\Emat}{{\MAT{E}}}
+\newcommand{\Xmat}{{\MAT{X}}}
+\newcommand{\Xvec}{{\VEC{X}}}
+\newcommand{\xvec}{{\VEC{x}}}
+
+
+\newcommand{\Zvec}{{\VEC{Z}}}
+\newcommand{\zvec}{{\VEC{z}}}
+
+\newcommand{\calG}{\mbox{${\cal G}$}}
+
+\bibliographystyle{plainnat}
+
+\title{First test document for weaver}
+\author{S. Falcon}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+This document provides some simple test cases for caching chunks in an
+Sweave document.
+
+The first chunk is not cached and contains a simple call to
+\Rfunction{rnorm}.  On consecutive builds, \Rcode{a} will have a
+different value based on the current seed of the RNG.
+<<t1>>=
+set.seed(123)
+a <- rnorm(5)
+a
+@ 
+
+Here we turn caching on.  Each expression in the chunk, in this case
+every line, is cached separately.  Since the \Rcode{b} variable is in
+a cached chunk, consecutive builds will have the same value.
+
+<<t2, cache=TRUE>>=
+b <- rnorm(3)
+firstB <- b
+c <- runif(3)
+z <- b + c
+z
+@ 
+
+Since cache files are stored separately for each chunk, we can
+duplicate an expression in a separate chunk and get a different
+result.
+
+<<t3, echo=FALSE, results=hide, cache=TRUE>>=
+## This expression will have the same hash value as the one in chunk
+## t2, but since the chunk names are different, we should get 
+## different values and not reuse the cached value from t2.
+b <- rnorm(3)
+secondB <- b
+stopifnot(!identical(firstB, secondB))
+## But within the same chunk, we will use the cache.  
+## So here, rnorm won't actually get called.
+b <- rnorm(3)
+thirdB <- b
+stopifnot(identical(secondB, thirdB))
+@ 
+
+<<t4>>=
+a
+b
+c
+z
+@ 
+
+
+\end{document}
