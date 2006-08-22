@@ -1,7 +1,3 @@
-%
-% NOTE -- ONLY EDIT howtogenefilter.Rnw!!!
-% Biobase.tex file will get overwritten.
-%
 %\VignetteIndexEntry{Using weaver to process Sweave documents}
 %\VignetteDepends{weaver}
 %\VignetteKeywords{latex,sweave,cache}
@@ -37,7 +33,7 @@
 \section{Introduction}
 
 The \Rpackage{weaver} package provides extensions to the Sweave
-utilities included in R's \Rpackage{base} package.  The focus of the
+utilities included in R's \Rpackage{utils} package.  The focus of the
 extensions is on caching computationally expensive (time consuming)
 code chunks in Sweave documents.
 
