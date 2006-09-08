@@ -8,7 +8,7 @@ log_debug <- function(msg) {
     if (!weaver_opts$DEBUG)
       return(FALSE)
     log <- file(weaver_opts$LOG, open="a")
-    sink(file=log, append=TRUE)
+    sink(file=log, append=FALSE)
 ##     now <- format(Sys.time(), "%d-%m-%Y-%H:%M:%S")
 ##     cat(now, "\n")
     print(msg)
@@ -65,11 +65,16 @@ eval_and_cache <- function(sexpr, deps, cacheEnv, cachefile, quiet) {
 }
 
 
-load_from_cache_env <- function(fromEnv, toEnv, hash, sym2hash) {
+load_from_cache_env <- function(fromEnv, toEnv, hash, sym2hash, updated) {
+    ## The 'updated' arg is a logical flag.  TRUE indicates that
+    ## syms in fromEnv were retrieved from cache but had to be
+    ## recomputed because of a dependency mismatch.  This is allows
+    ## us to detect second order dependency mismatch where the
+    ## expression doesn't change, but we've recomputed.
     syms <- ls(fromEnv)
     for (sym in syms) {
         assign(sym, fromEnv[[sym]], envir=toEnv)
-        assign(sym, hash, envir=sym2hash)
+        assign(sym, list(hash=hash, updated=updated), envir=sym2hash)
     }
 }
 
@@ -77,13 +82,40 @@ load_from_cache_env <- function(fromEnv, toEnv, hash, sym2hash) {
 deps_changed <- function(depSyms, sym2hash, oldDeps) {
     changed <- FALSE
     for (sym in depSyms) {
-        if (oldDeps[sym] != sym2hash[[sym]]) {
+        if (sym2hash[[sym]]$updated) {
             changed <- TRUE
-            log_debug("sym/hash mismatch, forcing recompute")
+            log_debug("updated flag TRUE, forcing recompute")
+            break
+        }
+        if (sym2hash[[sym]]$hash != oldDeps[sym]) {
+            changed <- TRUE
+            log_debug("sym <=> hash mismatch, forcing recompute")
             break
         }
     }
     changed
+}
+
+
+get_cache_dir <- function(dir) {
+    file.path(dir, getRversion())
+}
+
+
+get_chunk_id <- function(chunk.name, chunk.num) {
+    ## Return the chunk ID: For a chunk named "foo" that
+    ## is chunk number 5, the ID is: 'foo_5'.  If the chunk
+    ## has no name, we use UNNAMED_CHUNK_x and if for some reason
+    ## there is no chunk number, we use _UNKNOWN_NUMBER and, in this
+    ## case, give a warning message.
+    if(is.null(chunk.num) || is.na(chunk.num) || !is.numeric(chunk.num)) {
+        chunk.num <- "UNKNOWN_NUMBER"
+        warning("invalid chunk number: ", chunk.num, " using ", chunk.num)
+    }
+    chunk.num <- as.character(chunk.num)
+    if (length(chunk.name) == 0 || is.na(chunk.name) || chunk.name == "")
+      chunk.name <- "UNNAMED_CHUNK"
+    paste(chunk.name, chunk.num, sep="_")
 }
 
 
@@ -92,7 +124,7 @@ make_cache_expr <- function()
     sym2hash <- new.env(parent=emptyenv())
     hashDeps <- new.env(parent=emptyenv())
 
-    function(expr, chunk.name, quiet=TRUE, dir=CACHE_DIR) {
+    function(expr, chunk.name, chunk.num, quiet=TRUE, dir=CACHE_DIR) {
         ## Get an expression object that we can pass around
         ## without worrying about evaluation.  Have to take cdr
         ## (i.e., [[1]]) because otherwise we get
@@ -103,6 +135,7 @@ make_cache_expr <- function()
         hash <- h$hash
 
         log_debug(format(Sys.time(), "%d-%m-%Y-%H:%M:%S"))
+        log_debug("EXPRESSION:")
         log_debug(h$text)
         if (!quiet)
           expr_printer(h$text)
@@ -111,18 +144,20 @@ make_cache_expr <- function()
         known <- ls(sym2hash)
         usedIdx <- match(used, known, 0)
         used <- known[usedIdx]
-        deps <- sapply(used, function(v) sym2hash[[v]])
+        deps <- sapply(used, function(v) sym2hash[[v]]$hash)
         hashDeps[[hash]] <- deps
+        log_debug("DEPENDENCIES:")
         log_debug(deps)
         
         callingEnv <- parent.frame()
-        if (missing(chunk.name))
-          dir <- file.path(dir, getRversion())
-        else
-          dir <- file.path(dir, getRversion(), chunk.name)
+
+        dir <- file.path(get_cache_dir(dir),
+                         get_chunk_id(chunk.name, chunk.num))
         cachefile <- file.path(dir, paste(hash, CACHE_EXT, sep=""))
         recompute <- TRUE
+        foundCache <- FALSE
         if(file.exists(cachefile)) {
+            foundCache <- TRUE
             log_debug(paste("FOUND", cachefile))
             found <- load(cachefile)
             stopifnot(all(c("cacheEnv", "DEPS", "SESSION") %in% found))
@@ -140,7 +175,8 @@ make_cache_expr <- function()
               cat("  CACHE USED\n", file=stderr())
             log_debug("CACHE USED")
         }
-        load_from_cache_env(cacheEnv, callingEnv, hash, sym2hash)
+        updated <- foundCache && recompute
+        load_from_cache_env(cacheEnv, callingEnv, hash, sym2hash, updated)
         log_debug("===========================================")
         invisible(NULL)
     }

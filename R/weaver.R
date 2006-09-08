@@ -41,7 +41,8 @@ weaverRemoveOrphans <- function(object, options) {
     if(!options$use.cache || !options$cache)
       return(NULL)
     chunk <- options$label
-    cachedir <- file.path(CACHE_DIR, getRversion(), chunk)
+    cachedir <- file.path(get_cache_dir(CACHE_DIR),
+                          get_chunk_id(chunk, options$chunknr))
     curhashes <- sort(ls(environment(cache_expr)$hashDeps))
     expPat1 <- paste(".*\\", CACHE_EXT, "$", sep="")
     expPat2 <- paste("\\", CACHE_EXT, sep="")
@@ -61,30 +62,7 @@ weaverRemoveOrphans <- function(object, options) {
 }
 
 
-removeOrphanedCacheFiles <- function(verbose=TRUE) {
-    curhashes <- sort(ls(environment(cache_expr)$hashDeps))
-    cachedir <- file.path(CACHE_DIR, getRversion())
-    expPat1 <- paste(".*\\", CACHE_EXT, "$", sep="")
-    expPat2 <- paste("\\", CACHE_EXT, sep="")
-    hashfiles <- list.files(cachedir, pattern=expPat1)
-    hashfiles <- sort(sub(expPat2, "", hashfiles))
-    orphans <- hashfiles[!hashfiles %in% curhashes]
-    if (length(orphans)) {
-        if (verbose)
-          cat("Removing orphaned cache files:\n")
-        for (orph in orphans) {
-            if (verbose)
-              cat(paste(orph, ".RData", sep=""), "\n")
-            orph <- paste(cachedir, "/", orph, CACHE_EXT, sep="")
-            tryCatch(file.remove(orph), error=function(e) NULL)
-        }
-    }
-}
-
-
 weaverLatexFinish <- function(object, error=FALSE) {
-    if (!error)
-      removeOrphanedCacheFiles(verbose=!object$quiet)
     resetStorage(cache_expr)
     utils:::RweaveLatexFinish(object, error)
 }
@@ -260,9 +238,11 @@ weaverRuncode <- function(object, chunk, options)
 weaverEvalWithOpt <- function (expr, options, quiet=TRUE){
     if(options$eval){
         label <- options$label
+        chunkNum <- options$chunknr
         if(options$use.cache && options$cache)
-          expr <- substitute(cache_expr(e, chunk.name=n, quiet=q),
-                             list(e=expr, n=label, q=quiet))
+          expr <- substitute(cache_expr(e, chunk.name=n, chunk.num=i,
+                                        quiet=q),
+                             list(e=expr, n=label, i=chunkNum, q=quiet))
         res <- try(.Internal(eval.with.vis(expr, .GlobalEnv, baseenv())),
                    silent=TRUE)
         if(inherits(res, "try-error")) return(res)

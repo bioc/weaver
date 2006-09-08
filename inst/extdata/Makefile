@@ -20,6 +20,11 @@ testdoc1:
 	$(MAKE) doc1.testresult
 	@cat doc1.testresult
 
+testdoc2:
+	-rm doc2.tex doc2.testresult
+	$(MAKE) doc2.testresult
+	@cat doc2.testresult
+
 testall:
 	$(MAKE) realclean
 	$(MAKE) test

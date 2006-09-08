@@ -75,5 +75,32 @@ This is doc3.  Try to excercise the dependency tracking stuff.
 \end{Sinput}
 \end{Schunk}
 
+\begin{Schunk}
+\begin{Sinput}
+> a <- 2
+> b <- a + 2
+\end{Sinput}
+\end{Schunk}
+
+\begin{Schunk}
+\begin{Sinput}
+> b2 <- paste(1:2, b)
+\end{Sinput}
+\end{Schunk}
+
+\begin{Schunk}
+\begin{Sinput}
+> a
+\end{Sinput}
+\begin{Soutput}
+[1] 2
+\end{Soutput}
+\begin{Sinput}
+> b2
+\end{Sinput}
+\begin{Soutput}
+[1] "1 4" "2 4"
+\end{Soutput}
+\end{Schunk}
 
 \end{document}

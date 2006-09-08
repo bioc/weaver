@@ -81,5 +81,23 @@ c
 z
 @ 
 
+<<t5, cache=TRUE>>=
+aStr <- "Strings can be cached"
+bStr <- paste(aStr, 1:3, sep="--->")
+@ 
+
+An unnamed code chunk:
+
+<<cache=TRUE>>=
+bbbb <- 10
+@ 
+
+Another unnamed chunk
+
+<<cache=FALSE>>=
+xyz <- bbbb + 1
+print(xyz)
+print(bStr)
+@ 
 
 \end{document}

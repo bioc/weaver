@@ -92,11 +92,17 @@ result.
 ## different values and not reuse the cached value from t2.
 b <- rnorm(3)
 secondB <- b
-stopifnot(!identical(firstB, secondB))
+
 ## But within the same chunk, we will use the cache.  
 ## So here, rnorm won't actually get called.
 b <- rnorm(3)
 thirdB <- b
+
+@ 
+
+<<t3asserts, echo=FALSE, results=hide>>=
+## DO NOT cache this chunk.
+stopifnot(!identical(firstB, secondB))
 stopifnot(identical(secondB, thirdB))
 @ 
 
@@ -105,6 +111,9 @@ a
 b
 c
 z
+firstB
+secondB
+thirdB
 @ 
 
 

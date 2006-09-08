@@ -71,5 +71,18 @@ bDat <- bDat[x]
 cDat <- bDat * 2
 @ 
 
+<<s1, cache=TRUE>>=
+a <- 2
+b <- a + 2
+@ 
+
+<<s2, cache=TRUE>>=
+b2 <- paste(1:2, b)
+@ 
+
+<<s3>>=
+a
+b2
+@ 
 
 \end{document}
