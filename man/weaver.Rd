@@ -98,10 +98,17 @@ weaverLatexSetup(file, syntax, output = NULL, quiet = FALSE, debug = FALSE, echo
       captured.  Do not use for chunks defining S4 classes or methods.}
   }
 }
-\author{Friedrich Leisch, with modifications by Seth Falcon}
+\author{Seth Falcon (borrowing heavily from code by Friedrich Leisch)}
 \references{
   Friedrich Leisch: Sweave User Manual, 2002\cr
   \url{http://www.ci.tuwien.ac.at/~leisch/Sweave}
 }
 \seealso{\code{\link{Sweave}}, \code{\link{Rtangle}}}
+
+\examples{
+\dontrun{
+  Sweave("yourfile.Rnw", driver=weaver())
+}
+}
+
 \keyword{utilities}
