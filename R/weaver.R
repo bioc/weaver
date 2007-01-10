@@ -12,14 +12,15 @@ weaver <- function()
 weaverLatexSetup <-
     function(file, syntax,
              output=NULL, quiet=FALSE, debug=FALSE, echo=TRUE,
-             eval=TRUE, split=FALSE, stylepath=TRUE, pdf=TRUE, eps=TRUE,
-             use.cache=TRUE)
+             eval=TRUE, keep.source=FALSE, split=FALSE, stylepath=TRUE,
+             pdf=TRUE, eps=TRUE, use.cache=TRUE)
 {
     if (!quiet)
       cat("Working dir:", getwd(), "\n")
     log_debug(paste("Working dir:", getwd()))
     res <- RweaveLatexSetup(file, syntax, output=output, quiet=quiet,
                             debug=debug, echo=echo, eval=eval,
+                            keep.source=keep.source,
                             split=split, stylepath=stylepath, pdf=pdf,
                             eps=eps)
     res$options[["use.cache"]] <- use.cache
