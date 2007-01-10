@@ -4,9 +4,9 @@ weaver <- function()
 {
     list(setup = weaverLatexSetup,
          runcode = weaverRuncode,
-         writedoc = utils:::RweaveLatexWritedoc,
+         writedoc = RweaveLatexWritedoc,
          finish = weaverLatexFinish,
-         checkopts = utils:::RweaveLatexOptions)
+         checkopts = RweaveLatexOptions)
 }
 
 weaverLatexSetup <-
@@ -18,14 +18,14 @@ weaverLatexSetup <-
     if (!quiet)
       cat("Working dir:", getwd(), "\n")
     log_debug(paste("Working dir:", getwd()))
-    res <- utils:::RweaveLatexSetup(file, syntax, output=output, quiet=quiet,
-                                    debug=debug, echo=echo, eval=eval,
-                                    split=split, stylepath=stylepath, pdf=pdf,
-                                    eps=eps)
+    res <- RweaveLatexSetup(file, syntax, output=output, quiet=quiet,
+                            debug=debug, echo=echo, eval=eval,
+                            split=split, stylepath=stylepath, pdf=pdf,
+                            eps=eps)
     res$options[["use.cache"]] <- use.cache
     res$options[["cache"]] <- FALSE
     ## to be on the safe side: see if defaults pass the check
-    res$options <- utils:::RweaveLatexOptions(res$options)
+    res$options <- RweaveLatexOptions(res$options)
     res
 }
 
@@ -64,178 +64,21 @@ weaverRemoveOrphans <- function(object, options) {
 
 weaverLatexFinish <- function(object, error=FALSE) {
     resetStorage(cache_expr)
-    utils:::RweaveLatexFinish(object, error)
+    RweaveLatexFinish(object, error)
 }
 
 
-## Ask Friedrich if he would consider adding an argument that allows
-## passing the function to use for RweaveEvalWithOpt.
-weaverRuncode <- function(object, chunk, options)
-{
-    if(!(options$engine %in% c("R", "S"))){
-        return(object)
-    }
+weaverRuncode <- makeRweaveLatexCodeRunner(evalFunc=weaverEvalWithOpt)
 
-    if(!object$quiet){
-        cat(formatC(options$chunknr, width=2), ":")
-        if(options$echo) cat(" echo")
-        if(options$eval){
-            if(options$print) cat(" print")
-            if(options$term) cat(" term")
-            cat("", options$results)
-            if(options$fig){
-                if(options$eps) cat(" eps")
-                if(options$pdf) cat(" pdf")
-            }
-        }
-        if(!is.null(options$label))
-            cat(" (label=", options$label, ")", sep="")
-        cat("\n")
-    }
+## FIXME: we used to call weaverRemoveOrphans inside the copy/pasted
+## Runcode.  Now that we don't have this we either need to ask for a
+## hook to be added or see if the work can be done in the finish step.
+##
+## Also, with currnet, there is no nice way to decide whether we should
+## be quiet or not in the eval process.  One option is to pass object to
+## evalFunc as well.
 
-    chunkprefix <- utils:::RweaveChunkPrefix(options)
-
-    if(options$split){
-        chunkout <- object$chunkout[[chunkprefix]]
-        if(is.null(chunkout)){
-            chunkout <- file(paste(chunkprefix, "tex", sep="."), "w")
-            if(!is.null(options$label))
-                object$chunkout[[chunkprefix]] <- chunkout
-        }
-    }
-    else
-        chunkout <- object$output
-
-    SweaveHooks(options, run=TRUE)
-
-    chunkexps <- try(parse(text=chunk), silent=TRUE)
-    utils:::RweaveTryStop(chunkexps, options)
-    openSinput <- FALSE
-    openSchunk <- FALSE
-
-    if(length(chunkexps)==0)
-        return(object)
-
-    for(nce in 1:length(chunkexps))
-    {
-        ce <- chunkexps[[nce]]
-        dce <- deparse(ce, width.cutoff=0.75*getOption("width"))
-        if(object$debug)
-            cat("\nRnw> ", paste(dce, collapse="\n+  "),"\n")
-        if(options$echo){
-            if(!openSinput){
-                if(!openSchunk){
-                    cat("\\begin{Schunk}\n",
-                        file=chunkout, append=TRUE)
-                    openSchunk <- TRUE
-                }
-                cat("\\begin{Sinput}",
-                    file=chunkout, append=TRUE)
-                openSinput <- TRUE
-            }
-            cat("\n", getOption("prompt"),
-                paste(dce,
-                      collapse=paste("\n", getOption("continue"), sep="")),
-                file=chunkout, append=TRUE, sep="")
-        }
-
-        # tmpcon <- textConnection("output", "w")
-        # avoid the limitations (and overhead) of output text connections
-        tmpcon <- file()
-        sink(file=tmpcon)
-        err <- NULL
-        if(options$eval) err <- weaverEvalWithOpt(ce, options, object$quiet)
-        cat("\n") # make sure final line is complete
-        sink()
-        output <- readLines(tmpcon)
-        close(tmpcon)
-        ## delete empty output
-        if(length(output)==1 & output[1]=="") output <- NULL
-
-        utils:::RweaveTryStop(err, options)
-
-        if(object$debug)
-            cat(paste(output, collapse="\n"))
-
-        if(length(output)>0 & (options$results != "hide")){
-
-            if(openSinput){
-                cat("\n\\end{Sinput}\n", file=chunkout, append=TRUE)
-                openSinput <- FALSE
-            }
-            if(options$results=="verbatim"){
-                if(!openSchunk){
-                    cat("\\begin{Schunk}\n",
-                        file=chunkout, append=TRUE)
-                    openSchunk <- TRUE
-                }
-                cat("\\begin{Soutput}\n",
-                    file=chunkout, append=TRUE)
-            }
-
-            output <- paste(output,collapse="\n")
-            if(options$strip.white %in% c("all", "true")){
-                output <- sub("^[[:space:]]*\n", "", output)
-                output <- sub("\n[[:space:]]*$", "", output)
-                if(options$strip.white=="all")
-                    output <- sub("\n[[:space:]]*\n", "\n", output)
-            }
-            cat(output, file=chunkout, append=TRUE)
-            remove(output)
-
-            if(options$results=="verbatim"){
-                cat("\n\\end{Soutput}\n", file=chunkout, append=TRUE)
-            }
-        }
-    }
-    ## we've eval'd the entire chunk, clean orphans from
-    ## the cache dir
-    weaverRemoveOrphans(object, options)
-
-    if(openSinput){
-        cat("\n\\end{Sinput}\n", file=chunkout, append=TRUE)
-    }
-
-    if(openSchunk){
-        cat("\\end{Schunk}\n", file=chunkout, append=TRUE)
-    }
-
-    if(is.null(options$label) & options$split)
-        close(chunkout)
-
-    if(options$split & options$include)
-        cat("\\input{", chunkprefix, "}\n", sep="",
-            file=object$output, append=TRUE)
-
-    if(options$fig && options$eval){
-        if(options$eps){
-            postscript(file=paste(chunkprefix, "eps", sep="."),
-                       width=options$width, height=options$height,
-                       paper="special", horizontal=FALSE)
-
-            err <- try({SweaveHooks(options, run=TRUE);
-                        eval(chunkexps, envir=.GlobalEnv)})
-            dev.off()
-            if(inherits(err, "try-error")) stop(err)
-        }
-        if(options$pdf){
-            pdf(file=paste(chunkprefix, "pdf", sep="."),
-                width=options$width, height=options$height)
-
-            err <- try({SweaveHooks(options, run=TRUE);
-                        eval(chunkexps, envir=.GlobalEnv)})
-            dev.off()
-            if(inherits(err, "try-error")) stop(err)
-        }
-        if(options$include)
-            cat("\\includegraphics{", chunkprefix, "}\n", sep="",
-                file=object$output, append=TRUE)
-    }
-    return(object)
-}
-
-
-weaverEvalWithOpt <- function (expr, options, quiet=TRUE){
+weaverEvalWithOpt <- function (expr, options, quiet=FALSE){
     if(options$eval){
         label <- options$label
         chunkNum <- options$chunknr
