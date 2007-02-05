@@ -69,7 +69,8 @@ turned on for all expressions in the chunk.  Here's an example:
 Side-effects, such as printing, plotting, definging S4 classes or
 methods, or setting global options are not captured by the caching
 mechanism.  Avoid doing such things in a code chunk that has
-\Rcode{cache=TRUE}.
+\Rcode{cache=TRUE}.  Treat cached code chunks as if you had set the
+option \Rcode{results=hide}.
 
 
 \subsection{Warnings about using the caching feature}
@@ -78,8 +79,8 @@ Do not stare directly at the cache!  May cause blindness, headache,
 shortness of breath, and dizzyness.
 
 \begin{itemize}
-\item Printing doesn't work normally in cached chunks.  If you want to
-      print a value, use \Rcode{print(foo)}.
+\item Printing doesn't work in cached chunks since it is a side
+  effect.
 
 \item The dependency detection is imperfect and will fail you.  When
       you've made important changes, you should remove all cache files
