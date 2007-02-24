@@ -1,3 +1,5 @@
+Fix orphan cache file cleanup
+
 Add a NAMESPACE.  Unfortunately, this appears to be
 non-trivial.  Might have to export things we don't
 want to export and even then end up with strange
@@ -6,3 +8,5 @@ errors.  See the ns branch in git.
 More documentation.
 
 More tests.
+
+Allow caching only certain expressions? To avoid large intermediates?
