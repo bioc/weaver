@@ -10,3 +10,17 @@ More documentation.
 More tests.
 
 Allow caching only certain expressions? To avoid large intermediates?
+
+Add option to force recomputation (and recaching) of all chunks.
+Perhaps refresh.cache.  Similarly, might be good to be able to turn
+off dependency tracking and force use of cache?
+
+Add option to make cache directory document specific.
+
+Verify that all \SweaveOpts{} are supported.  User reported that
+pdf.version option didn't work, for example.
+
+For Sweave: multiple graphic formats besides just pdf and eps (perhaps
+as a separate driver?)
+
+For Sweave: warn about fig chunks with same name
