@@ -118,6 +118,10 @@ get_chunk_id <- function(chunk.name, chunk.num) {
     paste(chunk.name, chunk.num, sep="_")
 }
 
+## one idea is to put the cache_expr defn in an environment
+## persistent_funcs and then access it via get_chache_expr() I suppose
+## we could rename the resetStorage => initCacheExpr and have this
+## function take a cache.dir arg.
 
 make_cache_expr <- function()
   local({

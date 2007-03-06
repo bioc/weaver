@@ -5,8 +5,6 @@ non-trivial.  Might have to export things we don't
 want to export and even then end up with strange
 errors.  See the ns branch in git.
 
-More documentation.
-
 More tests.
 
 Allow caching only certain expressions? To avoid large intermediates?
@@ -15,10 +13,27 @@ Add option to force recomputation (and recaching) of all chunks.
 Perhaps refresh.cache.  Similarly, might be good to be able to turn
 off dependency tracking and force use of cache?
 
-Add option to make cache directory document specific.
+Add option to make cache directory document specific.  Although
+perhaps this should actually be the default and users should intervene
+to share cache dir if that is desired.
 
 Verify that all \SweaveOpts{} are supported.  User reported that
 pdf.version option didn't work, for example.
+
+warn users when duplicate expressions appear in the same code chunk
+
+add list of known side-effect producing functions and issue warning
+when they appear in cached chunks.
+
+Consider special treatment for graphics producing functions such as
+pdf/plot.  Could look for the file, for example, and if not there
+re-compute.
+
+warn users when expression depends on variables in the global env that
+are not defined in a cached chunk (and hence can't be tracked).
+
+
+# ----------------------------------
 
 For Sweave: multiple graphic formats besides just pdf and eps (perhaps
 as a separate driver?)
