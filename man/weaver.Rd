@@ -12,7 +12,7 @@
 \usage{
 weaver()
 
-weaverLatexSetup(file, syntax, output = NULL, quiet = FALSE, debug = FALSE, echo = TRUE, eval = TRUE, split = FALSE, stylepath = TRUE, pdf = TRUE, eps = TRUE, use.cache = TRUE)
+weaverLatexSetup(file, syntax, output = NULL, quiet = FALSE, debug = FALSE, echo = TRUE, eval = TRUE, keep.source = FALSE, split = FALSE, stylepath = TRUE, pdf = TRUE, eps = TRUE, use.cache = TRUE)
 }
 \arguments{
   \item{file}{Name of Sweave source file.}
@@ -36,6 +36,7 @@ weaverLatexSetup(file, syntax, output = NULL, quiet = FALSE, debug = FALSE, echo
   }
   \item{echo}{set default for option \code{echo}, see details below.}
   \item{eval}{set default for option \code{eval}, see details below.}
+  \item{keep.source}{set default for option 'keep.source', see details below.}
   \item{split}{set default for option \code{split}, see details below.}
   \item{pdf}{set default for option \code{pdf}, see details below.}
   \item{eps}{set default for option \code{eps}, see details below.}
@@ -51,6 +52,11 @@ weaverLatexSetup(file, syntax, output = NULL, quiet = FALSE, debug = FALSE, echo
       output file?}
     \item{eval:}{logical (\code{TRUE}). If \code{FALSE}, the code chunk is not
       evaluated, and hence no text or graphical output produced.}
+
+    \item{keep.source:}{logical (\code{FALSE}).  When echoing, if \code{keep.source ==
+          TRUE} the original source is copied to the file.  Otherwise,
+          deparsed source is echoed.}
+
     \item{results:}{character string (\code{verbatim}).
       If \code{verbatim}, the output of S commands is
       included in the verbatim-like Soutput environment. If
