@@ -3,7 +3,7 @@ R=R-2.14
 .SUFFIXES : .tex .testresult .Rnw
 
 .Rnw.tex:
-	echo "library(weaver); Sweave(\"$<\", driver=weaver())" | $(R) --no-save --no-restore
+	echo "library(weaver); Sweave(\"$<\", driver=weaver(), stylepath=FALSE)" | $(R) --no-save --no-restore
 
 .tex.testresult:
 	@echo -n `./cmptex.sh $< ./expected/$<` > $@
