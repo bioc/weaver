@@ -152,7 +152,7 @@ make_cache_expr <- function()
         hashDeps[[hash]] <- deps
         log_debug("DEPENDENCIES:")
         log_debug(deps)
-        
+
         callingEnv <- parent.frame()
 
         dir <- file.path(get_cache_dir(dir),

@@ -36,7 +36,7 @@ resetStorage <- function(fun) {
     storage[["hashDeps"]] <- new.env(parent=emptyenv())
     storage[["sym2hash"]] <- new.env(parent=emptyenv())
 }
-    
+
 
 weaverRemoveOrphans <- function(object, options) {
     if(!options$use.cache || !options$cache)
