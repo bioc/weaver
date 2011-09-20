@@ -83,15 +83,15 @@ weaverEvalWithOpt <- function (expr, options, quiet=FALSE){
     if(options$eval){
         label <- options$label
         chunkNum <- options$chunknr
-        if(options$use.cache && options$cache)
-          expr <- substitute(cache_expr(e, chunk.name=n, chunk.num=i,
-                                        quiet=q),
-                             list(e=expr, n=label, i=chunkNum, q=quiet))
-        res <- try(withVisible(expr), silent=TRUE)
+        if(options$use.cache && options$cache) {
+            expr <- substitute(cache_expr(e, chunk.name=n, chunk.num=i,
+                                          quiet=q),
+                               list(e=expr, n=label, i=chunkNum, q=quiet))
+        }
+        res <- try(withVisible(eval(expr, .GlobalEnv)), silent=TRUE)
         if(inherits(res, "try-error")) return(res)
         if(options$print | (options$term & res$visible))
             print(res$value)
     }
     return(res)
 }
-

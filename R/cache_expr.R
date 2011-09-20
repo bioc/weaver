@@ -172,7 +172,7 @@ make_cache_expr <- function()
         }
         if (recompute) {
             dir.create(dir, showWarnings=FALSE, recursive=TRUE)
-            cacheEnv <- new.env() 
+            cacheEnv <- new.env(parent=.GlobalEnv)
             eval_and_cache(sexpr, deps, cacheEnv, cachefile, quiet)
         } else {
             if (!quiet)
