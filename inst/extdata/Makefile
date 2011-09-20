@@ -1,12 +1,13 @@
+R=R-2.14
+
 .SUFFIXES : .tex .testresult .Rnw
 
 .Rnw.tex:
-	weaver.sh $<
+	echo "library(weaver); Sweave(\"$<\", driver=weaver())" | $(R) --no-save --no-restore
 
 .tex.testresult:
 	@echo -n `./cmptex.sh $< ./expected/$<` > $@
 	@echo "    $<" >> $@
-
 
 RNW=$(wildcard *.Rnw)
 TRESULT=$(RNW:.Rnw=.testresult)
